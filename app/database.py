@@ -1,19 +1,30 @@
-"""Initialize database connections."""
-
+"""Initializes firestore client."""
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./dev.db")
+import firebase_admin
+from firebase_admin import credentials, firestore
 
-if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(
-        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-    )
-else:
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+def initialize_firebase_app():
+    """
+    Pulls in the token and initializes the firebase authentication.
+    """
+    temp_file_path = "temp_firebase.json"
+    with open(temp_file_path, "w+") as temp_file:
+        temp_file.write(os.environ["FIREBASE_JSON"])
+    cred = credentials.Certificate(temp_file_path)
+    os.remove(temp_file_path)
+    firebase_admin.initialize_app(cred)
 
-Base = declarative_base()
+
+def get_firestore_client():
+    """
+    Returns a firestore client. Initializes the firebase app if necessary.
+    """
+    if not firebase_admin._apps:  # pylint: disable=protected-access
+        initialize_firebase_app()
+
+    return firestore.client()
+
+
+firestore_client = get_firestore_client()

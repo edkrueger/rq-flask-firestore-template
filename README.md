@@ -1,9 +1,14 @@
 # redis-demo
 
 ## Setup
-Run `pipenv install` to install the env.  
+Run `pipenv install` to install the env.
+Due to a pipenv issue, you may have to run `pipenv install --dev pre-commit black pylint`, if the development dependencies don't install.      
 Run `pipenv run pre-commit install` to initialize the git hooks.  
 Run `pipenv run pre-commit run --all-files` if there are file that were committed before adding the git hooks.  
+
+## Environmental Variables
+Put your firestore service account JSON into `example.env` where indicated.  
+Rename `example.env` to `.env`.
 
 ## Dev Tools
 Activate the shell with: `pipenv shell`  
