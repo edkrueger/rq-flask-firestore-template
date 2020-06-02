@@ -1,12 +1,11 @@
 """Define functions to use in redis queue."""
 
+import os
 import time
 
 from rq import get_current_job
 
 from .database import firestore_client
-
-COLLECTION = "garbage"
 
 
 def some_long_function(some_input):
@@ -14,7 +13,9 @@ def some_long_function(some_input):
     job = get_current_job()
     time.sleep(10)
 
-    doc_ref = firestore_client.collection(COLLECTION).document(job.id)
+    doc_ref = firestore_client.collection(
+        os.getenv("FIRESTORE_COLLECTION", "demo_collection")
+    ).document(job.id)
 
     result = {
         "job_id": job.id,
