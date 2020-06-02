@@ -4,15 +4,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-black = "*"
-pylint = "*"
-pre-commit = "*"
+black = "==19.10b0"
+pylint = "==2.5.2"
+pre-commit = "==2.4.0"
 
 [packages]
 redis = "==3.5.2"
 flask = "==1.1.2"
 gunicorn = "==20.0.4"
-sqlalchemy = "==1.3.17"
+firebase-admin = "==4.3.0"
 
 [requires]
 python_version = "3.7"
