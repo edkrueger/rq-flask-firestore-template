@@ -4,10 +4,9 @@ import time
 
 from rq import get_current_job
 
-from . import models
-from .database import SessionLocal, engine
+from .database import firestore_client
 
-models.Base.metadata.create_all(bind=engine)
+COLLECTION = "garbage"
 
 
 def some_long_function(some_input):
@@ -15,24 +14,16 @@ def some_long_function(some_input):
     job = get_current_job()
     time.sleep(10)
 
-    sql_db = SessionLocal()
+    doc_ref = firestore_client.collection(COLLECTION).document(job.id)
 
-    result = models.Result(
-        job_id=job.id,
-        job_enqueued_at=job.enqueued_at,
-        job_started_at=job.started_at,
-        input=some_input,
-        result=some_input,
-    )
-
-    sql_db.add(result)
-    sql_db.commit()
-    sql_db.close()
-
-    return {
+    result = {
         "job_id": job.id,
         "job_enqueued_at": job.enqueued_at.isoformat(),
         "job_started_at": job.started_at.isoformat(),
         "input": some_input,
         "result": some_input,
     }
+
+    doc_ref.set(result)
+
+    return result
