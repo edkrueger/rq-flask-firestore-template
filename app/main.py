@@ -2,19 +2,17 @@
 
 # pylint: disable=broad-except
 
+import os
 import time
 
-# from flask import Flask, _app_ctx_stack, abort, jsonify, request
 from flask import Flask, abort, jsonify, request
 from rq.job import Job
 
-# from .database import SessionLocal, engine
+from .database import firestore_client
 from .functions import some_long_function
 from .redis_resc import redis_conn, redis_queue
 
-
 app = Flask(__name__)
-# app.db = scoped_session(SessionLocal, scopefunc=_app_ctx_stack.__ident_func__)
 
 
 @app.errorhandler(404)
@@ -72,25 +70,25 @@ def get_result():
         abort(404, description=exception)
 
 
-# @app.route("/get_result_from_database")
-# def get_result_from_database():
-#     """Takes a job_id and returns the job's result from the SQL database."""
-#     job_id = request.args["job_id"]
+@app.route("/get_result_from_database")
+def get_result_from_database():
+    """Takes a job_id and returns the job's result from the SQL database."""
+    job_id = request.args["job_id"]
 
-#     try:
-#         result = (
-#             app.db.query(models.Result).filter(models.Result.job_id == job_id).first()
-#         )
-#         return result.to_dict()
-#     except Exception as exception:
-#         abort(404, description=exception)
+    try:
 
+        doc_ref = firestore_client.collection(
+            os.getenv("FIRESTORE_COLLECTION", "demo_collection")
+        ).document(job_id)
 
-# @app.teardown_appcontext
-# def remove_session(*args, **kwargs):  # pylint: disable=unused-argument
-#     """Closes the database session."""
-#     app.db.remove()
+        doc = doc_ref.get()
+        if not doc.exists:
+            abort(
+                404,
+                f"No document found for job_id {job_id}. Try checking the job's status.",
+            )
 
+        return doc.to_dict()
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    except Exception as exception:
+        abort(404, description=exception)
