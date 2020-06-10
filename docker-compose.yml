@@ -1,0 +1,21 @@
+
+version: "3.8"
+services:
+    redis:
+        image: redis
+        ports:
+            - "6379:6379"
+    app:
+        image: rq-firestore:latest
+        environment: 
+            - FIREBASE_JSON=${FIREBASE_JSON}
+            - PORT=8000
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        ports:
+            - "80:8000"
+    worker:
+        image: rq-firestore:latest
+        environment: 
+            - FIREBASE_JSON=${FIREBASE_JSON}
+        command: rq worker --url redis://redis:6379 
